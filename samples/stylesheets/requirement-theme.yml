@@ -1,0 +1,4 @@
+extends: default
+role:
+  rationale:
+    font-style: italic

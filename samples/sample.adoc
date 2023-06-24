@@ -1,0 +1,33 @@
+= Requirement Block Extension
+:sectnums:
+:sectnumlevels: 5
+:reqprefix: BLOP
+:doncinfodir: ./docinfo
+
+== Level 1 section
+
+
+[requirement]
+====
+id: "0170"
+rev: a
+status: valid
+title: Document Capability
+description: The STRS platform provider shall describe, in the HID document, the reconfigurability behavior and capability of each reconfigurable component. 
+rationale: |
+    Waveform developers need to know the features and limitations of the platform for their applications.
+    Once the radio has been procured, NASA has the knowledge to procure or produce new or additional modules using HID information.
+    Also, future module replacement or additions will be possible without designing a new platform.
+    [plantuml, target="temp/diamgram", format="svg"]
+    ----
+    A -> B
+    ----
+
+tags:
+    key1: value1
+    key2: value2
+====
+
+// source : https://strs.grc.nasa.gov/what-is-strs/strs-requirements-and-examples
+
+
