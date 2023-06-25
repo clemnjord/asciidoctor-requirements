@@ -21,7 +21,7 @@ jobs:
         run: asciidoctor -r asciidoctor-diagram -r asciidoctor-requirements -a toc -a linkcss -a stylesheet=./stylesheets/requirement-style.css  samples/sample.adoc --trace
 
       - name: Build sample as PDF
-        run: asciidoctor-pdf --theme samples/stylesheets/requirement-theme.yml -r asciidoctor-diagram -r %SCRIPT_ROOT%..\lib\asciidoctor-requirements.rb -a toc samples/sample.adoc --trace
+        run: asciidoctor-pdf --theme samples/stylesheets/requirement-theme.yml -r asciidoctor-diagram -r asciidoctor-requirements -a toc samples/sample.adoc --trace
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
