@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir['lib/**/*'] + ['README.adoc']
   
   spec.add_runtime_dependency 'asciidoctor', '~> 2.0'
-  spec.add_runtime_dependency  'yaml', '~> 0.1.0'
+  spec.add_runtime_dependency  'yaml', '~> 0.2.1'
 
   spec.add_development_dependency 'asciidoctor-pdf'
   spec.add_development_dependency 'asciidoctor-diagram', '~> 2.2'
