@@ -7,26 +7,49 @@ module AsciidoctorRequirements
 
         class RequirementBlock < ::Asciidoctor::Extensions::BlockProcessor
             use_dsl
-
             named :requirement
             on_context :example
             parse_content_as :raw
 
             def process(parent, reader, attrs)
-                raw_data = reader.readlines.join("\n")
-                yaml_req = YAML.load(raw_data)
+                req_yaml = req_parse_yaml(reader)
 
-                req_create_section(parent, yaml_req, attrs)                           
-                req_create_description(parent, yaml_req, attrs)
-                req_create_tabs_table(parent, yaml_req, attrs)
-                req_create_rationale(parent, yaml_req, attrs)
+                req_validate_inputs(parent, req_yaml)
+
+                req_create_section(parent, req_yaml, attrs)                           
+                req_create_description(parent, req_yaml, attrs)
+                req_create_tabs_table(parent, req_yaml, attrs)
+                req_create_rationale(parent, req_yaml, attrs)
                 req_create_break(parent)
                
-                parent
-
+                return parent
             end
 
-            def req_create_section(parent, yaml, attrs)
+            # Read yaml from block
+            def req_parse_yaml(reader)
+                raw_data = reader.readlines.join("\n")
+
+                begin
+                    yaml = YAML.load(raw_data)
+                rescue => e
+                    puts "\n\n"
+                    puts "!!!!!!!!!!!!!!!!!!!!!!!!!!"
+                    puts "!!! YAML parsing error !!!"
+                    puts "!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                    puts "e.message: " + e.message + "\n\n"
+
+                    puts "Malformed yaml in loaded data:\n////////\n" + raw_data + "\n////////\n\nUsual errors:\n\t* Tabulations are not allowed. Use spaces instead.\n\n\n" 
+                    raise e
+                end
+
+                return yaml
+            end
+
+            # Validate yaml has mandatory elements
+            def req_validate_inputs(parent, yaml)
+                if parent.document.attributes["reqprefix"].nil?
+                    raise "reqprefix missing in document.\n" + req_usage() 
+                end
                 if yaml["title"].nil?
                     raise "Title missing in requirement yaml.\n" + req_usage() 
                 end
@@ -36,24 +59,29 @@ module AsciidoctorRequirements
                 end
 
                 if yaml["id"].nil?
-                    raise "id missing in requirement yaml.\n" + req_usage() 
+                    raise "id missing in requirement yaml.\n" + req_usage()
                 end
 
+                if yaml["description"].nil?
+                    raise "Description missing in requirement yaml.\n" + req_usage() 
+                end
+            end
+
+            # Create subsection 
+            def req_create_section(parent, yaml, attrs)
                 section_title = String(parent.document.attributes["reqprefix"] + "_" +yaml["id"] + "_" + yaml["rev"] + " : " + yaml["title"])
 
                 parent << create_section(parent, section_title, {})
             end
 
+            # Create description block
             def req_create_description(parent, yaml, attrs)
-                if yaml["description"].nil?
-                    raise "Description missing in requirement yaml.\n" + req_usage() 
-                end
-
                 description_text = "[.lead]\n" +  yaml["description"]
 
                 parse_content(parent, description_text, {})
             end
 
+            # Create rationale block, if rationale element is present in yaml
             def req_create_rationale(parent, yaml, attrs)
                 if yaml["rationale"].nil?
                     return
@@ -65,9 +93,10 @@ module AsciidoctorRequirements
                 parse_content(parent, rationale, {})
             end
 
+            # Create tags block, if tags element is present in yaml
             def req_create_tabs_table(parent, yaml, attrs)
                 if yaml["tags"].empty?
-                    return ""
+                    return
                 end
 
                 tag_lines = ""
@@ -77,19 +106,22 @@ module AsciidoctorRequirements
                     tag_lines += "|" + k + "|" + v + "\n"
                 end
 
-                tag_lines = "[%autowidth.stretch]\n" + table_delimiter + "\n" + tag_lines + table_delimiter
+                tag_lines = "[cols='.^1,6']\n" + table_delimiter + "\n" + tag_lines + table_delimiter
 
                 parse_content(parent, tag_lines, {})
             end
 
+            # Create line separator block
             def req_create_break(parent)
                 parse_content(parent, "'''", {})
             end
 
+            # Return usage string
             def req_usage()
                 usage = '
                 USAGE : 
-                
+                :reqprefix: PREFIX
+
                 [requirement]
                 ====
                 id: "0170"
@@ -109,9 +141,7 @@ module AsciidoctorRequirements
                 ====
                 
                 '
-
-
-                usage
+                return usage
             end
         end
     end
